@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário Moderno e Funcional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #b3e5fc, #81d4fa);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            overflow: auto;
+            animation: gradient-bg 15s ease infinite;
+        }
+
+        @keyframes gradient-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 90vw;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: fade-in 1s ease-out;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: 700;
+            color: #555;
+            font-size: 0.95em;
+            padding: 8px 0;
+        }
+
+        .day {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 90px;
+            max-height: 160px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .day:hover {
+            transform: translateY(-5px) scale(1.05);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .day.weekend {
+            background: rgba(158, 158, 158, 0.25);
+            border: 2px solid rgba(158, 158, 158, 0.5);
+        }
+
+        .day.holiday {
+            background: rgba(244, 67, 54, 0.25);
+            border: 2px solid rgba(244, 67, 54, 0.6);
+        }
+
+        .day.today {
+            background: rgba(255, 235, 59, 0.5) !important;
+            border: 3px solid #ffc107;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.7);
+        }
+
+        .day-number {
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .events {
+            font-size: 0.82em;
+            color: #444;
+        }
+
+        .events p {
+            margin: 4px 0;
+            padding: 4px 8px;
+            background: rgba(79, 195, 247, 0.3);
+            border-radius: 6px;
+            word-wrap: break-word;
+        }
+
+        .holiday-label {
+            font-size: 0.8em;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 6px;
+            background: rgba(244, 67, 54, 0.2);
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .year-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .month-mini {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .month-mini h3 {
+            margin: 0 0 10px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            font-size: 0.75em;
+            position: relative;
+        }
+
+        .month-day {
+            padding: 4px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .month-day.has-event {
+            background: rgba(76, 175, 80, 0.4);
+            font-weight: bold;
+            cursor: help;
+        }
+
+        .month-day.weekend {
+            background: rgba(158, 158, 158, 0.2);
+        }
+
+        .month-day.holiday {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+        }
+
+        .month-day:hover .tooltip {
+            opacity: 1;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+            font-weight: 400;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #29b6f6, #4fc3f7);
+        }
+
+        button.delete-btn {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        button.delete-btn:hover {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 30px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.6);
+            color: #333;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #29b6f6;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .calendar { gap: 8px; }
+            .day { padding: 8px; min-height: 70px; }
+            .nav { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">Calendário Moderno - Janeiro 2026</h1>
+        
+        <div class="nav">
+            <button id="prev-month">Mês Anterior</button>
+            <button id="next-month">Próximo Mês</button>
+            <button id="year-view-btn">Vista Anual</button>
+            <button id="month-view-btn" style="display: none;">Vista Mensal</button>
+        </div>
+        
+        <div id="month-calendar">
+            <div class="calendar" id="calendar">
+                <div class="day-header">Dom</div>
+                <div class="day-header">Seg</div>
+                <div class="day-header">Ter</div>
+                <div class="day-header">Qua</div>
+                <div class="day-header">Qui</div>
+                <div class="day-header">Sex</div>
+                <div class="day-header">Sáb</div>
+            </div>
+        </div>
+        
+        <div id="year-view" class="year-view" style="display: none;"></div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="add-event-btn">Adicionar Evento ou Feriado</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Adicionar Evento ou Feriado</h2>
+            <select id="event-type">
+                <option value="event">Evento</option>
+                <option value="holiday">Feriado</option>
+            </select>
+            <input type="date" id="event-start-date">
+            <input type="date" id="event-end-date" placeholder="Data de Fim (opcional)">
+            <input type="text" id="event-title" placeholder="Título">
+            <textarea id="event-desc" rows="3" placeholder="Descrição (opcional)"></textarea>
+            <div style="margin-top: 20px;">
+                <button id="save-event">Salvar</button>
+                <button id="delete-event" class="delete-btn" style="display: none;">Excluir</button>
+                <button id="close-modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const today = new Date();
+        let currentDate = new Date(2026, 0, 6);
+
+        let data = JSON.parse(localStorage.getItem('calendarData') || '{"events":[],"holidays":[]}');
+        let events = data.events;
+        let holidays = data.holidays;
+
+        let editingItem = null;
+
+        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // Função para criar data sem problema de fuso horário
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            const [year, month, day] = dateStr.split('-').map(Number);
+            return new Date(Date.UTC(year, month - 1, day));
+        }
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function saveData() {
+            localStorage.setItem('calendarData', JSON.stringify({events, holidays}));
+        }
+
+        function isWeekend(date) {
+            return date.getUTCDay() === 0 || date.getUTCDay() === 6;
+        }
+
+        function isHoliday(date) {
+            const dateStr = formatDate(date);
+            return holidays.some(h => h.date === dateStr);
+        }
+
+        function isToday(date) {
+            return formatDate(date) === formatDate(today);
+        }
+
+        function getEventsHTML(year, month, day) {
+            const checkDate = new Date(Date.UTC(year, month, day));
+            let html = '';
+
+            events.forEach(e => {
+                const start = parseDate(e.startDate);
+                const rawEnd = parseDate(e.endDate || e.startDate);
+                const end = new Date(Date.UTC(rawEnd.getUTCFullYear(), rawEnd.getUTCMonth(), rawEnd.getUTCDate() + 1)); // Inclusivo
+
+                if (checkDate >= start && checkDate < end) {
+                    html += `<p>${e.title}${e.desc ? ': ' + e.desc : ''}</p>`;
+                }
+            });
+
+            const dateStr = formatDate(checkDate);
+            const holiday = holidays.find(h => h.date === dateStr);
+            if (holiday) {
+                html += `<div class="holiday-label">${holiday.title}</div>`;
+            }
+
+            return html;
+        }
+
+        function getEventsTooltip(year, month, day) {
+            const checkDate = new Date(Date.UTC(year, month, day));
+            let list = [];
+
+            events.forEach(e => {
+                const start = parseDate(e.startDate);
+                const rawEnd = parseDate(e.endDate || e.startDate);
+                const end = new Date(Date.UTC(rawEnd.getUTCFullYear(), rawEnd.getUTCMonth(), rawEnd.getUTCDate() + 1));
+
+                if (checkDate >= start && checkDate < end) {
+                    list.push(e.title + (e.desc ? ': ' + e.desc : ''));
+                }
+            });
+
+            const dateStr = formatDate(checkDate);
+            const holiday = holidays.find(h => h.date === dateStr);
+            if (holiday) list.push('Feriado: ' + holiday.title);
+
+            return list.length > 0 ? list.join('<br>') : null;
+        }
+
+        function renderMonthCalendar() {
+            const calendar = document.getElementById('calendar');
+            while (calendar.children.length > 7) {
+                calendar.removeChild(calendar.lastChild);
+            }
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            document.getElementById('title').textContent = `${months[month]} ${year}`;
+
+            for (let i = 0; i < firstDay; i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(Date.UTC(year, month, day));
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+
+                if (isWeekend(date)) dayDiv.classList.add('weekend');
+                if (isHoliday(date)) dayDiv.classList.add('holiday');
+                if (isToday(date)) dayDiv.classList.add('today');
+
+                dayDiv.innerHTML = `
+                    <div class="day-number">${day}</div>
+                    <div class="events">${getEventsHTML(year, month, day)}</div>
+                `;
+
+                dayDiv.onclick = () => openModal(date);
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        function renderYearView() {
+            const container = document.getElementById('year-view');
+            container.innerHTML = '';
+            const year = currentDate.getFullYear();
+
+            document.getElementById('title').textContent = `Ano ${year}`;
+
+            for (let m = 0; m < 12; m++) {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month-mini';
+                monthDiv.innerHTML = `<h3>${months[m]} ${year}</h3>`;
+
+                const grid = document.createElement('div');
+                grid.className = 'month-grid';
+
+                ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].forEach(letter => {
+                    const header = document.createElement('div');
+                    header.className = 'month-day';
+                    header.textContent = letter;
+                    grid.appendChild(header);
+                });
+
+                const firstDay = new Date(year, m, 1).getDay();
+                const daysInMonth = new Date(year, m + 1, 0).getDate();
+
+                for (let i = 0; i < firstDay; i++) {
+                    grid.appendChild(document.createElement('div'));
+                }
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const date = new Date(Date.UTC(year, m, d));
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'month-day';
+                    dayCell.textContent = d;
+
+                    const tooltipText = getEventsTooltip(year, m, d);
+                    if (tooltipText) {
+                        dayCell.classList.add('has-event');
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'tooltip';
+                        tooltip.innerHTML = tooltipText;
+                        dayCell.appendChild(tooltip);
+                    }
+
+                    if (isWeekend(date)) dayCell.classList.add('weekend');
+                    if (isHoliday(date)) dayCell.classList.add('holiday');
+
+                    grid.appendChild(dayCell);
+                }
+
+                monthDiv.appendChild(grid);
+                container.appendChild(monthDiv);
+            }
+        }
+
+        let viewMode = 'month';
+
+        function toggleView() {
+            if (viewMode === 'month') {
+                document.getElementById('month-calendar').style.display = 'none';
+                document.getElementById('year-view').style.display = 'grid';
+                document.getElementById('prev-month').style.display = 'none';
+                document.getElementById('next-month').style.display = 'none';
+                document.getElementById('year-view-btn').style.display = 'none';
+                document.getElementById('month-view-btn').style.display = 'inline-block';
+                renderYearView();
+                viewMode = 'year';
+            } else {
+                document.getElementById('month-calendar').style.display = 'block';
+                document.getElementById('year-view').style.display = 'none';
+                document.getElementById('prev-month').style.display = 'inline-block';
+                document.getElementById('next-month').style.display = 'inline-block';
+                document.getElementById('year-view-btn').style.display = 'inline-block';
+                document.getElementById('month-view-btn').style.display = 'none';
+                renderMonthCalendar();
+                viewMode = 'month';
+            }
+        }
+
+        function openModal(date = new Date()) {
+            editingItem = null;
+            document.getElementById('modal-title').textContent = 'Adicionar Evento ou Feriado';
+            document.getElementById('event-type').value = 'event';
+            document.getElementById('event-start-date').value = formatDate(date);
+            document.getElementById('event-end-date').value = '';
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-desc').value = '';
+            document.getElementById('delete-event').style.display = 'none';
+
+            const dateStr = formatDate(date);
+
+            const holiday = holidays.find(h => h.date === dateStr);
+            if (holiday) {
+                editingItem = { type: 'holiday', item: holiday };
+                document.getElementById('modal-title').textContent = 'Editar Feriado';
+                document.getElementById('event-type').value = 'holiday';
+                document.getElementById('event-start-date').value = dateStr;
+                document.getElementById('event-title').value = holiday.title;
+                document.getElementById('delete-event').style.display = 'inline-block';
+            } else {
+                const event = events.find(e => {
+                    const start = parseDate(e.startDate);
+                    const rawEnd = parseDate(e.endDate || e.startDate);
+                    const end = new Date(Date.UTC(rawEnd.getUTCFullYear(), rawEnd.getUTCMonth(), rawEnd.getUTCDate() + 1));
+                    return date >= start && date < end;
+                });
+                if (event) {
+                    editingItem = { type: 'event', item: event };
+                    document.getElementById('modal-title').textContent = 'Editar Evento';
+                    document.getElementById('event-type').value = 'event';
+                    document.getElementById('event-start-date').value = event.startDate;
+                    document.getElementById('event-end-date').value = event.endDate || '';
+                    document.getElementById('event-title').value = event.title;
+                    document.getElementById('event-desc').value = event.desc || '';
+                    document.getElementById('delete-event').style.display = 'inline-block';
+                }
+            }
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        document.getElementById('add-event-btn').onclick = () => openModal();
+        document.getElementById('close-modal').onclick = () => document.getElementById('modal').style.display = 'none';
+
+        document.getElementById('save-event').onclick = () => {
+            const type = document.getElementById('event-type').value;
+            const start = document.getElementById('event-start-date').value;
+            const end = document.getElementById('event-end-date').value;
+            const title = document.getElementById('event-title').value.trim();
+            const desc = document.getElementById('event-desc').value.trim();
+
+            if (!start || !title) {
+                alert('Por favor, preencha a data de início e o título.');
+                return;
+            }
+
+            if (editingItem) {
+                if (editingItem.type === 'event') {
+                    Object.assign(editingItem.item, {
+                        startDate: start,
+                        endDate: end || start,
+                        title,
+                        desc
+                    });
+                } else if (editingItem.type === 'holiday') {
+                    editingItem.item.date = start;
+                    editingItem.item.title = title;
+                }
+            } else {
+                if (type === 'event') {
+                    events.push({
+                        startDate: start,
+                        endDate: end || start,
+                        title,
+                        desc
+                    });
+                } else {
+                    holidays = holidays.filter(h => h.date !== start);
+                    holidays.push({ date: start, title });
+                }
+            }
+
+            saveData();
+            document.getElementById('modal').style.display = 'none';
+            if (viewMode === 'month') renderMonthCalendar();
+            else renderYearView();
+        };
+
+        document.getElementById('delete-event').onclick = () => {
+            if (confirm('Tem certeza que deseja excluir este item?')) {
+                if (editingItem.type === 'event') {
+                    events = events.filter(e => e !== editingItem.item);
+                } else if (editingItem.type === 'holiday') {
+                    holidays = holidays.filter(h => h !== editingItem.item);
+                }
+                saveData();
+                document.getElementById('modal').style.display = 'none';
+                if (viewMode === 'month') renderMonthCalendar();
+                else renderYearView();
+            }
+        };
+
+        document.getElementById('prev-month').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderMonthCalendar();
+        };
+
+        document.getElementById('next-month').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderMonthCalendar();
+        };
+
+        document.getElementById('year-view-btn').onclick = toggleView;
+        document.getElementById('month-view-btn').onclick = toggleView;
+
+        renderMonthCalendar();
+    </script>
+</body>
+</html>
